@@ -379,7 +379,7 @@ let
              winvm check                        print edition, activation, Secure Boot, TPM, identity, agents
              winvm debloat [--check]            apply the declared guest state (debloat, languages, preferences); --check only reports
              winvm clean                        empty the recycle bin, temp folders and caches, clean the component store, TRIM
-             winvm activate                     install the product key from sops and activate (fallback)
+             winvm activate                     install the product key from its file and activate (fallback)
              winvm usb list                     the devices that may be lent (allow-list on the host)
              winvm usb attach|detach NAME       lend an allow-listed USB device to the guest, or give it back
              winvm put FILE... --to DIR [--from DIR]
@@ -462,7 +462,7 @@ let
 
       secrets() {
         [ -r "$key_file" ] && [ -r "$password_file" ] ||
-          die "sops secrets missing ($key_file, $password_file): is the home configuration switched?"
+          die "secret files unreadable (productKeyFile $key_file, passwordFile $password_file): are they in place?"
         product_key=$(tr -d '[:space:]' <"$key_file")
         password=$(<"$password_file")
       }
@@ -519,7 +519,7 @@ let
       # The TPM state is part of the machine Windows recognizes, like the
       # identity in the definition. A profile without one takes another
       # profile's (with the SSH key pair; not known_hosts: a new guest has its
-      # own host key), else the copy kept in sops (after a reinstall of the
+      # own host key), else the copy in tpmStateFile (after a reinstall of the
       # host). Never a fresh TPM: every install is a reinstall on the same
       # machine, the same digital licence. Not the UEFI variables: they are no
       # part of the identity, and another profile's boot entries came before
@@ -541,9 +541,9 @@ let
           echo "winvm: TPM state taken from profile $p (the same machine for Windows)"
           return 0
         done
-        [ -r "$tpm_file" ] || die "no TPM state in any profile and none from sops ($tpm_file): is the home configuration switched?"
+        [ -r "$tpm_file" ] || die "no TPM state in any profile and tpmStateFile unreadable ($tpm_file): is it in place?"
         (umask 027 && base64 -d <"$tpm_file" >"$vm_dir/tpm2-00.permall")
-        echo "winvm: TPM state restored from sops (the same machine for Windows)"
+        echo "winvm: TPM state restored from tpmStateFile (the same machine for Windows)"
       }
 
       # The profile running other than this one, if any.
@@ -623,9 +623,9 @@ let
           ensure_tpm
           if [ ! -e "$iso" ]; then
             tmp=$(mktemp -d "$vm_dir/download.XXXXXX")
-            (cd "$tmp" && quickget --download windows 11 "English (United States)") || true
+            (cd "$tmp" && quickget --download windows 11 ${lib.escapeShellArg cfg.locale.isoLanguage}) || true
             found=$(find "$tmp" -name '*.iso' -size +1G | head -n 1)
-            [ -n "$found" ] || die "the ISO download failed; download Windows 11 (English (United States)) by hand and save it as $iso"
+            [ -n "$found" ] || die ${lib.escapeShellArg "the ISO download failed; download Windows 11 (${cfg.locale.isoLanguage}) by hand and save it as "}"$iso"
             mv "$found" "$iso"
             rm -rf "$tmp"
           fi
@@ -888,6 +888,20 @@ in
       ui = lib.mkOption {
         type = lib.types.str;
         description = "Windows display language; must be the install ISO's language.";
+      };
+      isoLanguage = lib.mkOption {
+        type = lib.types.str;
+        # Only the pairs checked on an install; quickget names its ISOs by
+        # Microsoft's download names, not by language tags.
+        default =
+          {
+            "en-US" = "English (United States)";
+            "en-GB" = "English International";
+          }
+          .${cfg.locale.ui}
+            or (throw "programs.winvm.locale.isoLanguage: no known ISO for locale.ui ${cfg.locale.ui}; set it to one of quickget's Windows languages");
+        defaultText = lib.literalMD "`English (United States)` for `en-US`, `English International` for `en-GB`; any other `locale.ui` needs it set";
+        description = "The ISO `winvm install` downloads, as quickget names its Windows languages (`quickget windows 11` lists them); its UI language must be `locale.ui`.";
       };
       formats = lib.mkOption {
         type = lib.types.str;
