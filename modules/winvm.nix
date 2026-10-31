@@ -3,7 +3,8 @@
 # rebuilds of this definition and reinstalls, and the `winvm` command:
 # `install` (unattended, key and password from files read at run time),
 # `finish`, `check`, `activate`, and the declared guest state (debloat,
-# languages, preferences) from a script the host overlay supplies.
+# languages, preferences): general entries from winvm-debloat/, plus the host
+# overlay's own.
 #
 # Quickemu takes the VM directory from `disk_img`, not from where the .conf
 # lives (checked in quickemu 4.9.9), so the .conf can stay a read-only store
@@ -211,7 +212,45 @@ let
   '';
 
   # The declared state of the guest; read-only `--check`, `apply`, `clean`.
-  inherit (cfg) debloatScript taskmgrSettings;
+  # One script, so the copy the logon task runs is the script itself ($self):
+  # the engine, the option values, the general entries, the host's entries,
+  # the modes. Windows PowerShell 5.1 reads a BOM-less file as ANSI, so the
+  # build refuses anything but ASCII.
+  psString = s: "'${lib.replaceStrings [ "'" ] [ "''" ] s}'";
+  debloatValues = pkgs.writeText "winvm-debloat-values.ps1" ''
+    # ---------------------------------------------------------------- values --
+    # From the programs.winvm options.
+    $winvmUser = ${psString cfg.user.name}
+    $winvmComputerName = ${psString cfg.computerName}
+    $winvmKeyboard = ${psString (lib.last (lib.splitString ":" cfg.locale.input))}
+    $winvmAutoLogon = @(${
+      lib.concatMapStringsSep ", " psString (
+        lib.attrNames (lib.filterAttrs (_: p: p.autoLogon) cfg.profiles)
+      )
+    })
+  '';
+  debloatScript =
+    pkgs.runCommand "winvm-debloat.ps1"
+      {
+        parts = [
+          ./winvm-debloat/engine.ps1
+          debloatValues
+        ]
+        ++ lib.optional cfg.debloat.defaults ./winvm-debloat/entries.ps1
+        ++ cfg.debloat.extraEntries
+        ++ [ ./winvm-debloat/modes.ps1 ];
+      }
+      ''
+        for p in $parts; do
+          cat "$p"
+          echo
+        done >"$out"
+        if [ -n "$(LC_ALL=C tr -d '\0-\177' <"$out")" ]; then
+          echo "winvm-debloat.ps1: not ASCII (Windows PowerShell 5.1 reads it as ANSI)" >&2
+          exit 1
+        fi
+      '';
+  inherit (cfg) taskmgrSettings;
   # A profile without a directory under layoutDir keeps Windows' own pins.
   layoutFor =
     profile:
@@ -909,9 +948,17 @@ in
       type = lib.types.path;
       description = "Task Manager settings restored in every profile.";
     };
-    debloatScript = lib.mkOption {
-      type = lib.types.path;
-      description = "The declared guest state, a PowerShell script run with `-Mode specialize|apply|check|clean`.";
+    debloat = {
+      defaults = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "The general entries of the declared guest state (`winvm-debloat/entries.ps1`): Store apps, telemetry, AI, UI noise, idle services, sign-in and the like.";
+      };
+      extraEntries = lib.mkOption {
+        type = lib.types.listOf lib.types.path;
+        default = [ ];
+        description = "The host's own entries, PowerShell (ASCII only) added after the general ones, with the same helpers (`Reg`, `Custom`, ...) and variables (`$vmProfile`, `$uiTag`, ...).";
+      };
     };
   };
 

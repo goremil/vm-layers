@@ -18,7 +18,7 @@ Layered QEMU virtual machines for NixOS hosts: a shared lifecycle core, Windows 
 | --- | --- |
 | `docs/adr/` | Architecture decisions |
 | `flake.nix` | Dev shell, `formatter` and `checks` from `setup-base`; `nixosModules`, `homeModules`, `nixosConfigurations.testbed`, `legacyPackages.<system>.tests` |
-| `modules/` | NixOS modules: `pc.nix` and `pc-qemu.nix` (ADR 0003), `testbed.nix` (purpose overlay), `winvm-usb.nix` (USB helper for `winvm`); home-manager module: `winvm.nix` (the Windows guest type, ADR 0002) |
+| `modules/` | NixOS modules: `pc.nix` and `pc-qemu.nix` (ADR 0003), `testbed.nix` (purpose overlay), `winvm-usb.nix` (USB helper for `winvm`); home-manager module: `winvm.nix` (the Windows guest type, ADR 0002) with `winvm-debloat/` (its declared guest state: engine, general entries, modes) |
 | `tests/` | NixOS VM tests, run with `nix build .#tests.<name>`; not in `checks`, they take minutes and need KVM |
 | `.envrc` | direnv enters the dev shell (`use flake`) |
 | `.githooks/` | pre-commit (`repo-check`), commit-msg and pre-push (signed and squashed commits, R-git-07), in the dev shell |

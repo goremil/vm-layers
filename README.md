@@ -25,7 +25,7 @@ nixpkgs.lib.nixosSystem {
 
 The disk image is `system.build.diskoImages`; `system.build.pcVm` runs the guest from it, on an overlay in the working directory that keeps its state between runs. Point `NIX_SWTPM_DIR` at a short path, such as one under `$XDG_RUNTIME_DIR`: swtpm refuses a Unix socket path over about 108 characters, and its default is the working directory. `nixosModules.testbed` is a neutral example with a typical layout, and `nixosConfigurations.testbed` builds it.
 
-`winvm` is a Windows 11 Pro guest under Quickemu, a home-manager module, with the `winvm` command (`winvm` alone lists its subcommands): an unattended install, Secure Boot and a TPM 2.0, a fixed hardware identity so the licence survives reinstalls, profiles that share that identity with one disk each, SSH into the guest, and a declared guest state applied from a script you supply. Your host overlay sets the values; nothing personal is built in:
+`winvm` is a Windows 11 Pro guest under Quickemu, a home-manager module, with the `winvm` command (`winvm` alone lists its subcommands): an unattended install, Secure Boot and a TPM 2.0, a fixed hardware identity so the licence survives reinstalls, profiles that share that identity with one disk each, SSH into the guest, and a declared guest state: general entries built in (Store apps, telemetry, AI, UI noise, idle services, sign-in), plus entries of your own. Your host overlay sets the values; nothing personal is built in:
 
 ```nix
 # home-manager
@@ -42,7 +42,7 @@ programs.winvm = {
   tpmStateFile = "…";                                               # base64 swtpm state, restored when no profile has one
   profiles = { default = { }; lab = { autoLogon = true; note = "tests only"; }; };
   taskmgrSettings = ./taskmgr.json;
-  debloatScript = ./debloat.ps1;                                    # -Mode specialize|apply|check|clean
+  debloat.extraEntries = [ ./debloat-mine.ps1 ];                    # PowerShell entries added to the general ones
 };
 ```
 
