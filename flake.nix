@@ -52,7 +52,13 @@
         pc = ./modules/pc.nix;
         # Purpose overlay: a neutral test bed on top of `pc`.
         testbed = ./modules/testbed.nix;
+        # The root helper that lends allow-listed USB devices to a `winvm` guest.
+        winvm-usb = ./modules/winvm-usb.nix;
       };
+
+      # The `winvm` guest type (ADR 0002): a Windows guest under Quickemu and
+      # its command; the host overlay sets its identity, secrets and profiles.
+      homeModules.winvm = ./modules/winvm.nix;
 
       nixosConfigurations.testbed = nixpkgs.lib.nixosSystem {
         modules = [
