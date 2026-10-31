@@ -6,3 +6,12 @@ nixosvm
 Quickemu
 winvm
 LUKS
+erofs
+goremil
+OVMF
+repart
+sbctl
+swtpm
+testbed
+subvolume
+subvolumes

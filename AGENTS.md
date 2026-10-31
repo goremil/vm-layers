@@ -17,7 +17,9 @@ Layered QEMU virtual machines for NixOS hosts: a shared lifecycle core, Windows 
 | Path | Content |
 | --- | --- |
 | `docs/adr/` | Architecture decisions |
-| `flake.nix` | Dev shell, `formatter` and `checks` from `setup-base` |
+| `flake.nix` | Dev shell, `formatter` and `checks` from `setup-base`; `nixosModules`, `nixosConfigurations.testbed`, `legacyPackages.<system>.tests` |
+| `modules/` | NixOS modules: `pc.nix` and `pc-qemu.nix` (ADR 0003), `testbed.nix` (purpose overlay) |
+| `tests/` | NixOS VM tests, run with `nix build .#tests.<name>`; not in `checks`, they take minutes and need KVM |
 | `.envrc` | direnv enters the dev shell (`use flake`) |
 | `.githooks/` | pre-commit (`repo-check`), commit-msg and pre-push (signed and squashed commits, R-git-07), in the dev shell |
 | `.markdownlint-cli2.jsonc` | Lint profile, linked by the dev shell; untracked |
