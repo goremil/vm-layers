@@ -1,6 +1,6 @@
 # 0002. Layers and the core contract
 
-- Status: Accepted
+- Status: Accepted; the NixOS guest type is superseded by [0003](0003-nixos-guests-on-nixos-mechanisms.md)
 - Date: 2026-10-31
 
 ## Context
