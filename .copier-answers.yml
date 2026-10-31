@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v0.16.0
+_src_path: https://github.com/goremil/setup-base.git
+description: 'Layered QEMU virtual machines for NixOS hosts: a shared lifecycle core,
+    Windows and NixOS guest types, and overlays for each purpose.'
+features: []
+forge_owner: goremil
+network_service: false
+project_name: vm-layers
+visibility: public

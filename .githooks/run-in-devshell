@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# run-in-devshell <hook> <command> [args]: runs a hook's command in this
+# repository's dev shell, where every tool is pinned by flake.lock. git can run a
+# hook outside the shell (a GUI, an editor's commit button); the hook then enters
+# the shell itself. When that is not possible it stops and says why: a check is
+# never skipped (R-check-04).
+set -euo pipefail
+hook="$1"
+shift
+# What the hook stops when it cannot run its check.
+action=commit
+[ "$hook" != pre-push ] || action=push
+cd "$(git rev-parse --show-toplevel)"
+
+if [ -n "${REPO_CHECK_DEVSHELL:-}" ]; then
+  exec "$@"
+fi
+
+fail() {
+  echo "$hook: $1" >&2
+  echo "$hook: nothing was checked, so the $action is stopped. $2" >&2
+  exit 1
+}
+
+command -v nix >/dev/null ||
+  fail "not in the dev shell, and nix is not on PATH to enter it." \
+    "Run git from a shell that has nix, inside the repository (direnv), or run 'nix develop'."
+
+# The marker tells a failure of `nix develop` itself from a failure of the check.
+marker=$(mktemp)
+trap 'rm -f "$marker"' EXIT
+status=0
+# shellcheck disable=SC2016 # the inner bash expands these, inside the dev shell
+HOOK_MARKER="$marker" nix develop --command bash -c \
+  'echo started >"$HOOK_MARKER"; exec "$@"' "$hook" "$@" || status=$?
+
+if [ "$status" -ne 0 ] && [ ! -s "$marker" ]; then
+  fail "not in the dev shell, and 'nix develop' could not enter it (exit $status, its error is above)." \
+    "Fix the flake (try 'nix develop' by hand), then $action again."
+fi
+exit "$status"

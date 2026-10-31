@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# pre-commit: every check of the repository (repo-check), in its dev shell.
+set -euo pipefail
+exec "$(dirname "$0")/run-in-devshell" pre-commit repo-check

@@ -1,0 +1,40 @@
+# https://editorconfig.org
+root = true
+
+# 4 spaces by default, Markdown included (Obsidian indents with 4 or a tab);
+# the sections below follow each language's formatter or style guide.
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Markdown: trailing whitespace is a hard line break, keep it.
+[*.md]
+trim_trailing_whitespace = false
+
+# nixfmt (RFC 166) indents with 2 and does not read this file.
+[*.nix]
+indent_size = 2
+
+# Shell for editors (Google Shell Style Guide: 2, case branches indented);
+# shfmt gets the same style as flags from repo-check and `nix fmt`, since no
+# section can name a script without an extension. Two sections: a pattern
+# with a slash is anchored here, which would keep *.sh from matching in
+# subfolders.
+[*.{sh,bash}]
+indent_size = 2
+switch_case_indent = true
+
+[.githooks/*]
+indent_size = 2
+switch_case_indent = true
+
+# Prettier's default for the web and data formats.
+[*.{yml,yaml,json,jsonc,js,mjs,cjs,ts,css,html}]
+indent_size = 2
+
+[{Makefile,*.mk,*.go}]
+indent_style = tab

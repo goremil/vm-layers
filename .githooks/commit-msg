@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# commit-msg: the subject is a Conventional Commit (commit-msg-check).
+set -euo pipefail
+exec "$(dirname "$0")/run-in-devshell" commit-msg commit-msg-check "$1"

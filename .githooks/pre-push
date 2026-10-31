@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# pre-push: the commits about to leave are signed and squashed (pre-push-check).
+set -euo pipefail
+exec "$(dirname "$0")/run-in-devshell" pre-push pre-push-check "$@"

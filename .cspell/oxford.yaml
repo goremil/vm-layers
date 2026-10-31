@@ -1,0 +1,34 @@
+version: "0.2"
+# The managed spelling profile: Oxford spelling (R-lang-04), the Nix and shell
+# vocabulary every repository on setup-base has, and drafts in another
+# language (R-lang-10). Managed by setup-base: copier update replaces this
+# file; the repository's own settings go in cspell.config.yaml, which imports
+# it.
+language: en-GB
+
+dictionaryDefinitions:
+  - name: oxford-ize
+    path: ./oxford-ize.txt
+    description: -ise forms forbidden by Oxford spelling
+    addWords: false
+  - name: nix-words
+    path: ./nix-words.txt
+    description: Nix vocabulary
+    addWords: false
+
+dictionaries:
+  - oxford-ize
+  - nix-words
+  - bash
+
+# Nix spells some of its own flags and options with -ise (`--realise`,
+# `auto-optimise-store`); a hyphenated token is code, so the forbidden forms
+# are skipped inside one. In prose they stay forbidden.
+ignoreRegExpList:
+  - "/[\\w-]*(?:-(?:optimise|realise)|(?:optimise|realise)-)[\\w-]*/g"
+
+# A draft named note.pl.md is Polish. Its dictionary comes from the editor's
+# Polish extension, or from repo-check in the dev shell (lib.cspellDictionaries).
+overrides:
+  - filename: "**/*.pl.md"
+    language: pl

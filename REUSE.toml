@@ -1,0 +1,17 @@
+version = 1
+SPDX-PackageName = "vm-layers"
+SPDX-PackageDownloadLocation = "https://github.com/goremil/vm-layers"
+
+# Code, build definitions and configuration: GPL-3.0-only.
+[[annotations]]
+path = ["**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "vm-layers contributors"
+SPDX-License-Identifier = "GPL-3.0-only"
+
+# Documentation: CC-BY-SA-4.0.
+[[annotations]]
+path = ["**.md"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "vm-layers contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"

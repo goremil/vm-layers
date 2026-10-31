@@ -1,0 +1,8 @@
+# Words specific to the repository (names, acronyms, jargon), one per line.
+btrfs
+chattr
+debloat
+nixosvm
+Quickemu
+winvm
+LUKS

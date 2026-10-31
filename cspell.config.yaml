@@ -1,0 +1,35 @@
+version: "0.2"
+# Spell-check config, read by the cspell CLI (repo-check) and the editor. The
+# managed profile in .cspell/oxford.yaml sets the language; this file is the
+# repository's own, written once by the template and never replaced.
+import:
+  - ./.cspell/oxford.yaml
+
+enableFiletypes:
+  - nix
+
+dictionaryDefinitions:
+  - name: code-words
+    path: ./.cspell/code-words.txt
+    description: Tokens found only in code (identifiers, flags, package names)
+    addWords: false
+  - name: project-words
+    path: ./.cspell/project-words.txt
+    description: Words specific to the repository (names, acronyms, jargon)
+    addWords: true  # the only writable target: "Add to Dictionary" lands here
+
+dictionaries:
+  - project-words
+  - code-words
+
+ignorePaths:
+  - .git/**
+  - flake.lock
+  - cspell.config.yaml  # this file and the word lists are intentional tokens
+  - .cspell/**
+  - LICENSES/**  # licence texts are verbatim, some in US spelling
+
+# The repository's name, which the template knows; last, so a test can drop it.
+words:
+  - vm
+  - layers
